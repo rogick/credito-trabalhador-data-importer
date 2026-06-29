@@ -21,6 +21,14 @@ Configuração compartilhada (sempre visível): **JWT Token** (Bearer) e
 
 ## Como rodar
 
+### Opção A — Standalone (sem build)
+
+Abra [`standalone.html`](standalone.html) diretamente no navegador. Tudo
+(React, Babel e Tailwind) é carregado via CDN e o app é transformado no
+próprio navegador — não precisa de `npm` nem de servidor.
+
+### Opção B — Com build (Vite)
+
 ```bash
 npm install
 npm run dev      # servidor de desenvolvimento (Vite)
