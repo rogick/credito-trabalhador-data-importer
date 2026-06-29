@@ -39,10 +39,45 @@ Os arquivos `index.html`, `src/main.jsx`, `vite.config.js` e `package.json`
 são apenas o scaffold de build/dev (Vite + Tailwind via CDN). A lógica
 permanece inteiramente no `.jsx` único.
 
+## CORS — obrigatório usar proxy
+
+A API do SERPRO **não envia cabeçalhos CORS**, então o navegador bloqueia
+qualquer chamada direta (`Failed to fetch`). É preciso um **proxy do lado do
+servidor** que faça a requisição e devolva com CORS liberado. O campo
+**"URL base da API (ou proxy)"** no topo do app permite apontar para o proxy
+sem mexer no código.
+
+### Com Vite (`npm run dev`) — proxy embutido
+
+O `vite.config.js` já encaminha o prefixo `/esocial-api` para o SERPRO. Basta
+preencher o campo **URL base da API** com:
+
+```
+/esocial-api/recepcaolote/api/ContratoEmprestimoConsignado
+```
+
+As chamadas saem same-origin para o Vite, que repassa ao SERPRO (sem CORS).
+
+### Com o standalone — proxy Node (sem dependências)
+
+Rode o proxy incluso e mantenha o `standalone.html` aberto:
+
+```bash
+node proxy-server.mjs          # escuta em http://localhost:8080
+# PORT=9000 node proxy-server.mjs   # porta alternativa
+```
+
+No app, preencha **URL base da API** com:
+
+```
+http://localhost:8080/recepcaolote/api/ContratoEmprestimoConsignado
+```
+
+> Os proxies são ferramentas de desenvolvimento/teste. Para produção, use um
+> backend próprio com as devidas regras de segurança.
+
 ## Observações
 
-- **CORS:** a API do governo pode bloquear chamadas diretas do navegador.
-  Nesse caso, use um proxy backend. O app exibe um aviso no topo.
 - **Autenticação:** o JWT é obtido externamente e informado pelo usuário.
   Não há persistência (`localStorage`) — o estado vive apenas em memória.
-- Os dados **não são mockados**: o app chama a API real.
+- Os dados **não são mockados**: o app chama a API real (via proxy).

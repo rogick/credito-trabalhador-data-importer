@@ -12,7 +12,9 @@ import React, { useState } from 'react';
  * Sem <form>, sem localStorage — todo estado em useState.
  */
 
-const BASE_URL =
+// URL base padrão (chamada direta ao SERPRO). Em navegador isso costuma falhar
+// por CORS — use um proxy (veja README) e ajuste o campo "URL base da API".
+const DEFAULT_BASE_URL =
   'https://producaorestrita-esocialconsignado.df-1.estaleiro.serpro.gov.br/recepcaolote/api/ContratoEmprestimoConsignado';
 
 // Tabela 01 do eSocial (categorias de trabalhador) — subconjunto mais usado.
@@ -230,7 +232,11 @@ function ResponseView({ result }) {
 export default function EsocialConsignadoApp() {
   const [jwtToken, setJwtToken] = useState('');
   const [nrInscricaoEmpregador, setNrInscricaoEmpregador] = useState('');
+  const [apiBase, setApiBase] = useState(DEFAULT_BASE_URL);
   const [activeTab, setActiveTab] = useState('send'); // 'send' | 'query'
+
+  // Remove barra(s) final(is) para montar as URLs com segurança.
+  const base = () => apiBase.trim().replace(/\/+$/, '');
 
   // Aba "Receber Lote"
   const [nrLote, setNrLote] = useState('');
@@ -292,7 +298,7 @@ export default function EsocialConsignadoApp() {
       })),
     };
 
-    const url = `${BASE_URL}/receberlote?nrInscricaoEmpregador=${encodeURIComponent(
+    const url = `${base()}/receberlote?nrInscricaoEmpregador=${encodeURIComponent(
       onlyDigits(nrInscricaoEmpregador)
     )}`;
 
@@ -313,7 +319,7 @@ export default function EsocialConsignadoApp() {
     setValidationErrors(errs);
     if (errs.length > 0) return;
 
-    const url = `${BASE_URL}/consultarlote?nrInscricaoEmpregador=${encodeURIComponent(
+    const url = `${base()}/consultarlote?nrInscricaoEmpregador=${encodeURIComponent(
       onlyDigits(nrInscricaoEmpregador)
     )}&nrLote=${encodeURIComponent(queryNrLote)}`;
 
@@ -373,6 +379,19 @@ export default function EsocialConsignadoApp() {
             inputMode="numeric"
           />
         </Field>
+        <div className="md:col-span-2">
+          <Field
+            label="URL base da API (ou proxy)"
+            hint="Para contornar CORS, aponte para seu proxy. Vite: /esocial-api/recepcaolote/api/ContratoEmprestimoConsignado · Node: http://localhost:8080/recepcaolote/api/ContratoEmprestimoConsignado"
+          >
+            <input
+              className={`${inputClass} font-mono`}
+              value={apiBase}
+              onChange={(e) => setApiBase(e.target.value)}
+              placeholder={DEFAULT_BASE_URL}
+            />
+          </Field>
+        </div>
       </div>
 
       {/* Abas */}
