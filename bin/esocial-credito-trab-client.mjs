@@ -11,7 +11,7 @@ const projectRoot = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 
 if (args.includes('--help') || args.includes('-h')) {
-  console.log(`Uso: esocial-consignado [opções]
+  console.log(`Uso: esocial-credito-trab-client [opções]
 
   -p, --port <n>   Porta HTTP (padrão: 3000, ou variável PORT)
   --dev            Roda em modo desenvolvimento (next dev)
@@ -33,23 +33,23 @@ function runNext(subArgs) {
     shell: process.platform === 'win32',
   });
   if (result.error) {
-    console.error('[esocial-consignado] Falha ao executar Next.js:', result.error.message);
+    console.error('[esocial-credito-trab-client] Falha ao executar Next.js:', result.error.message);
     process.exit(1);
   }
   return result.status ?? 0;
 }
 
 if (isDev) {
-  console.log(`[esocial-consignado] Modo desenvolvimento em http://localhost:${port}`);
+  console.log(`[esocial-credito-trab-client] Modo desenvolvimento em http://localhost:${port}`);
   process.exit(runNext(['dev', '-p', port]));
 }
 
 const buildIdFile = path.join(projectRoot, '.next', 'BUILD_ID');
 if (forceBuild || !existsSync(buildIdFile)) {
-  console.log('[esocial-consignado] Gerando build de produção (primeira execução)...');
+  console.log('[esocial-credito-trab-client] Gerando build de produção (primeira execução)...');
   const buildStatus = runNext(['build']);
   if (buildStatus !== 0) process.exit(buildStatus);
 }
 
-console.log(`[esocial-consignado] Iniciando em http://localhost:${port}`);
+console.log(`[esocial-credito-trab-client] Iniciando em http://localhost:${port}`);
 process.exit(runNext(['start', '-p', port]));

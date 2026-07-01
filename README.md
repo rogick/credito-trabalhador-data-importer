@@ -1,4 +1,4 @@
-# credito-trabalhador-data-importer
+# esocial-credito-trab-client
 
 Consumer (React/Next.js) da API **eSocial Consignado** do SERPRO para
 recepção e consulta de lotes de contrato de empréstimo consignado (Crédito
@@ -45,7 +45,7 @@ npm run dev      # http://localhost:3000
 npm run build && npm start   # build de produção
 ```
 
-### Instalação global (comando `esocial-consignado`)
+### Instalação global (comando `esocial-credito-trab-client`)
 
 Para rodar o app como um comando disponível em qualquer diretório:
 
@@ -57,11 +57,11 @@ O script instala as dependências, gera o build de produção e registra o
 comando globalmente via `npm link`. Depois disso, de qualquer pasta:
 
 ```bash
-esocial-consignado             # inicia em http://localhost:3000
-esocial-consignado -p 4000     # porta customizada (ou defina PORT=4000)
-esocial-consignado --dev       # modo desenvolvimento (next dev)
-esocial-consignado --build     # força regerar o build antes de iniciar
-esocial-consignado --help      # lista as opções
+esocial-credito-trab-client             # inicia em http://localhost:3000
+esocial-credito-trab-client -p 4000     # porta customizada (ou defina PORT=4000)
+esocial-credito-trab-client --dev       # modo desenvolvimento (next dev)
+esocial-credito-trab-client --build     # força regerar o build antes de iniciar
+esocial-credito-trab-client --help      # lista as opções
 ```
 
 Para desinstalar o comando global:

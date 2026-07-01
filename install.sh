@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Instala o app como comando global: `esocial-consignado`.
+# Instala o app como comando global: `esocial-credito-trab-client`.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -16,9 +16,9 @@ npm link
 
 echo
 echo "Instalação concluída. Rode de qualquer diretório:"
-echo "  esocial-consignado             # inicia em http://localhost:3000"
-echo "  esocial-consignado -p 4000     # porta customizada"
-echo "  esocial-consignado --dev       # modo desenvolvimento"
-echo "  esocial-consignado --help      # opções"
+echo "  esocial-credito-trab-client             # inicia em http://localhost:3000"
+echo "  esocial-credito-trab-client -p 4000     # porta customizada"
+echo "  esocial-credito-trab-client --dev       # modo desenvolvimento"
+echo "  esocial-credito-trab-client --help      # opções"
 echo
 echo "Para desinstalar: ./uninstall.sh"

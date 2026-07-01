@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Remove o comando global `esocial-consignado` instalado via install.sh.
+# Remove o comando global `esocial-credito-trab-client` instalado via install.sh.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

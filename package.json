@@ -1,10 +1,10 @@
 {
-  "name": "credito-trabalhador-data-importer",
+  "name": "esocial-credito-trab-client",
   "private": true,
   "version": "0.1.0",
   "description": "Consumer da API eSocial Consignado (SERPRO) — recepção e consulta de lotes de contrato de empréstimo consignado.",
   "bin": {
-    "esocial-consignado": "./bin/esocial-consignado.mjs"
+    "esocial-credito-trab-client": "./bin/esocial-credito-trab-client.mjs"
   },
   "scripts": {
     "dev": "next dev -p 4001",

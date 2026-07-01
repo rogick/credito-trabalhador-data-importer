@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * Consumer da API eSocial Consignado (SERPRO) — Produção Restrita.
@@ -159,10 +159,10 @@ function mapExternalRecord(item) {
   const tpInscricao = empDescricao.includes('CNPJ')
     ? '1'
     : empDescricao.includes('CPF')
-    ? '2'
-    : empDigits.length === 11
-    ? '2'
-    : '1';
+      ? '2'
+      : empDigits.length === 11
+        ? '2'
+        : '1';
 
   const valorParcelaNum = Number(item?.valorParcela);
   const vlParcela = item?.valorParcela != null && !isNaN(valorParcelaNum) ? valorParcelaNum.toFixed(2) : '';
@@ -315,7 +315,7 @@ function getFriendlyHeader(key) {
 function formatFriendlyCell(key, value) {
   if (value == null) return '';
   const norm = key.toLowerCase();
-  
+
   switch (norm) {
     case 'nrcpftrabalhador': {
       const clean = String(value).replace(/\D/g, '');
@@ -324,13 +324,13 @@ function formatFriendlyCell(key, value) {
       }
       return clean || String(value);
     }
-    
+
     case 'tpinscricao': {
       if (String(value) === '1') return '1 - CNPJ';
       if (String(value) === '2') return '2 - CPF';
       return String(value);
     }
-    
+
     case 'nrinscricao': {
       const clean = String(value).replace(/\D/g, '');
       if (clean.length === 14) {
@@ -341,11 +341,11 @@ function formatFriendlyCell(key, value) {
       }
       return clean || String(value);
     }
-    
+
     case 'vlparcela': {
       return formatBRL(value);
     }
-    
+
     case 'nrcompetenciadesconto': {
       const clean = String(value).replace(/\D/g, '');
       if (clean.length === 6) {
@@ -353,13 +353,13 @@ function formatFriendlyCell(key, value) {
       }
       return clean || String(value);
     }
-    
+
     case 'cdcategoria': {
       const categoryCode = String(value).trim();
       const match = CATEGORIAS.find(([code]) => code === categoryCode);
       return match ? match[1] : categoryCode;
     }
-    
+
     case 'dtinicioemprestimo': {
       const rawDate = String(value);
       if (rawDate.includes('T')) {
@@ -375,7 +375,7 @@ function formatFriendlyCell(key, value) {
       }
       return rawDate;
     }
-    
+
     default:
       if (typeof value === 'object') return JSON.stringify(value);
       return String(value);
@@ -422,19 +422,19 @@ function formatFriendlyErrorDetail(d) {
   if (!d) return null;
   let registro = d.Registro || d.registro || '';
   let mensagem = d.Mensagem || d.mensagem || '';
-  
+
   if (registro.toLowerCase().startsWith('lote:')) {
     const num = registro.split(':')[1];
     registro = `Lote nº ${num}`;
   }
-  
+
   const lowerMsg = mensagem.toLowerCase().trim();
   if (lowerMsg === 'lote nao encontrado' || lowerMsg === 'lote não encontrado') {
     mensagem = 'Lote não encontrado no sistema SERPRO.';
   } else if (lowerMsg === 'lote em processamento') {
     mensagem = 'O lote ainda está sendo processado.';
   }
-  
+
   return { registro, mensagem };
 }
 
@@ -461,8 +461,8 @@ function ResponseView({ result, t, theme }) {
   const rows = Array.isArray(data?.retornoLote)
     ? data.retornoLote
     : !businessFailure && Array.isArray(data?.details)
-    ? data.details
-    : null;
+      ? data.details
+      : null;
 
   return (
     <div className="mt-4 space-y-4">
@@ -524,7 +524,44 @@ function ResponseView({ result, t, theme }) {
 // ---- App principal --------------------------------------------------------
 
 export default function EsocialConsignadoApp() {
-  const [theme, setTheme] = useState('blue');
+  const [theme, setTheme] = useState('system');
+  const [systemIsDark, setSystemIsDark] = useState(false);
+
+  // Carrega o tema do localStorage ao montar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('esocial-consignado-theme');
+      if (saved && ['system', 'blue', 'emerald', 'dark', 'amber'].includes(saved)) {
+        setTheme(saved);
+      }
+    }
+  }, []);
+
+  // Salva o tema no localStorage ao mudar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('esocial-consignado-theme', theme);
+    }
+  }, [theme]);
+
+  // Escuta mudanças no esquema de cores do sistema
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setSystemIsDark(mediaQuery.matches);
+
+    const handler = (e) => {
+      setSystemIsDark(e.matches);
+    };
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  const getActiveTheme = () => {
+    if (theme !== 'system') return theme;
+    return systemIsDark ? 'dark' : 'blue';
+  };
+
   const [jwtToken, setJwtToken] = useState('');
   const [nrInscricaoEmpregador, setNrInscricaoEmpregador] = useState('');
   const [activeTab, setActiveTab] = useState('send'); // 'send' | 'query'
@@ -706,7 +743,7 @@ export default function EsocialConsignadoApp() {
         if (typeof data === 'string') {
           try {
             data = JSON.parse(data);
-          } catch {}
+          } catch { }
         }
       } catch {
         data = { raw: text };
@@ -720,25 +757,27 @@ export default function EsocialConsignadoApp() {
   };
 
   // -- Render --
-  const t = THEMES[theme];
+  const activeTheme = getActiveTheme();
+  const t = THEMES[activeTheme];
 
   return (
     <div className={t.bg}>
       <div className="mx-auto max-w-5xl p-6 space-y-6">
-        
+
         {/* Header da Página com Theme Switcher */}
-        <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b pb-4 ${theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'}`}>
+        <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b pb-4 ${activeTheme === 'dark' ? 'border-zinc-800' : 'border-slate-200'}`}>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">eSocial Consignado — Enviar Dados em Lote</h1>
+            <h1 className="text-2xl font-bold tracking-tight">eSocial Crédtio do Trabalhador — Enviar Dados em Lote</h1>
             <p className="text-sm opacity-70">
               Ambiente: Produção Restrita (SERPRO) · Crédito do Trabalhador
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider opacity-80">Tema:</span>
-            <div className={`flex items-center gap-1 rounded-lg border p-1 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-850' : 'bg-white border-slate-200'} shadow-sm`}>
+            <div className={`flex items-center gap-1 rounded-lg border p-1 ${activeTheme === 'dark' ? 'bg-zinc-900 border-zinc-850' : 'bg-white border-slate-200'} shadow-sm`}>
               {Object.entries({
+                system: { label: 'Auto', dot: 'bg-gradient-to-r from-blue-500 to-zinc-500' },
                 blue: { label: 'Blue', dot: 'bg-indigo-600' },
                 emerald: { label: 'Mint', dot: 'bg-emerald-600' },
                 dark: { label: 'Dark', dot: 'bg-zinc-400 border border-zinc-650' },
@@ -747,11 +786,10 @@ export default function EsocialConsignadoApp() {
                 <button
                   key={k}
                   onClick={() => setTheme(k)}
-                  className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-all ${
-                    theme === k
-                      ? (theme === 'dark' ? 'bg-zinc-800 text-white shadow-sm' : 'bg-slate-100 text-slate-900 shadow-sm')
-                      : (theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-800')
-                  }`}
+                  className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-all ${theme === k
+                      ? (activeTheme === 'dark' ? 'bg-zinc-800 text-white shadow-sm' : 'bg-slate-100 text-slate-900 shadow-sm')
+                      : (activeTheme === 'dark' ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-800')
+                    }`}
                 >
                   <span className={`h-2.5 w-2.5 rounded-full ${v.dot}`} />
                   {v.label}
@@ -786,7 +824,7 @@ export default function EsocialConsignadoApp() {
         </div>
 
         {/* Abas */}
-        <div className={`flex gap-2 border-b ${theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'}`}>
+        <div className={`flex gap-2 border-b ${activeTheme === 'dark' ? 'border-zinc-800' : 'border-slate-200'}`}>
           <button
             onClick={() => setActiveTab('send')}
             className={activeTab === 'send' ? t.tabActive : t.tabInactive}
@@ -813,7 +851,7 @@ export default function EsocialConsignadoApp() {
         {/* Conteúdo das abas */}
         {activeTab === 'send' ? (
           <section className="space-y-6">
-            
+
             {/* Importar via JSON */}
             <details className={`${t.card} group`}>
               <summary className="cursor-pointer select-none font-bold text-sm uppercase tracking-wider opacity-80 focus:outline-none flex justify-between items-center">
@@ -864,12 +902,12 @@ export default function EsocialConsignadoApp() {
 
               {/* Grid de Registros */}
               {lote.length === 0 ? (
-                <div className={`p-8 text-center rounded-xl border-2 border-dashed ${theme === 'dark' ? 'border-zinc-800 text-zinc-400' : 'border-slate-200 text-slate-500'}`}>
+                <div className={`p-8 text-center rounded-xl border-2 border-dashed ${activeTheme === 'dark' ? 'border-zinc-800 text-zinc-400' : 'border-slate-200 text-slate-500'}`}>
                   <p className="font-medium">Nenhum registro adicionado ao lote ainda.</p>
                   <p className="text-xs opacity-75 mt-1">Adicione um novo registro pelo botão abaixo ou cole um JSON para importar.</p>
                 </div>
               ) : (
-                <div className={`overflow-x-auto rounded-xl border ${theme === 'dark' ? 'border-zinc-800' : 'border-slate-200'} shadow-sm`}>
+                <div className={`overflow-x-auto rounded-xl border ${activeTheme === 'dark' ? 'border-zinc-800' : 'border-slate-200'} shadow-sm`}>
                   <table className="min-w-full border-collapse">
                     <thead>
                       <tr>
@@ -1130,7 +1168,7 @@ export default function EsocialConsignadoApp() {
         )}
 
         {/* Resposta */}
-        <ResponseView result={result} t={t} theme={theme} />
+        <ResponseView result={result} t={t} theme={activeTheme} />
       </div>
     </div>
   );
