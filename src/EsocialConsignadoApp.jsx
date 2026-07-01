@@ -1,19 +1,23 @@
+'use client';
+
 import React, { useState } from 'react';
 
 /**
  * Consumer da API eSocial Consignado (SERPRO) — Produção Restrita.
  *
- * App de arquivo único com duas abas:
- *  - Receber Lote  (POST /receberlote)
- *  - Consultar Lote (GET  /consultarlote)
+ * App com duas abas:
+ *  - Receber Lote   (POST /api/receberlote  -> servidor Next.js -> SERPRO)
+ *  - Consultar Lote (GET  /api/consultarlote -> servidor Next.js -> SERPRO)
+ *
+ * As chamadas à API do SERPRO são feitas pelas API Routes do Next.js
+ * (server-side, ver app/api/*), não diretamente pelo navegador — assim
+ * evita-se o bloqueio de CORS que a API do governo impõe a chamadas
+ * browser-direct.
  *
  * Autenticação via Bearer JWT informado pelo usuário.
  * Sem bibliotecas externas além de Tailwind (classes base).
  * Sem <form>, sem localStorage — todo estado em useState.
  */
-
-const BASE_URL =
-  'https://producaorestrita-esocialconsignado.df-1.estaleiro.serpro.gov.br/recepcaolote/api/ContratoEmprestimoConsignado';
 
 // Tabela 01 do eSocial (categorias de trabalhador) — subconjunto mais usado.
 const CATEGORIAS = [
@@ -185,7 +189,7 @@ function ResponseView({ result }) {
         <p className="font-semibold">Falha na requisição</p>
         <p className="mt-1">{error}</p>
         <p className="mt-2 text-xs text-red-600">
-          Possíveis causas: bloqueio de CORS pelo navegador, indisponibilidade da API,
+          Possíveis causas: servidor Next.js fora do ar, indisponibilidade da API do SERPRO,
           token inválido ou ausência de conectividade com o ambiente de produção restrita.
         </p>
       </div>
@@ -292,7 +296,7 @@ export default function EsocialConsignadoApp() {
       })),
     };
 
-    const url = `${BASE_URL}/receberlote?nrInscricaoEmpregador=${encodeURIComponent(
+    const url = `/api/receberlote?nrInscricaoEmpregador=${encodeURIComponent(
       onlyDigits(nrInscricaoEmpregador)
     )}`;
 
@@ -313,7 +317,7 @@ export default function EsocialConsignadoApp() {
     setValidationErrors(errs);
     if (errs.length > 0) return;
 
-    const url = `${BASE_URL}/consultarlote?nrInscricaoEmpregador=${encodeURIComponent(
+    const url = `/api/consultarlote?nrInscricaoEmpregador=${encodeURIComponent(
       onlyDigits(nrInscricaoEmpregador)
     )}&nrLote=${encodeURIComponent(queryNrLote)}`;
 
@@ -350,8 +354,10 @@ export default function EsocialConsignadoApp() {
 
       {/* Aviso CORS */}
       <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">
-        ⚠️ Esta API pode exigir proxy backend por restrições de CORS. Chamadas diretas pelo
-        navegador podem ser bloqueadas.
+        ⚠️ Esta API exige proxy backend por restrições de CORS. As requisições abaixo passam
+        pelas API Routes deste servidor Next.js (<code>/api/receberlote</code>,{' '}
+        <code>/api/consultarlote</code>), que repassam ao SERPRO — o navegador nunca chama a
+        API do governo diretamente.
       </div>
 
       {/* Configuração compartilhada */}

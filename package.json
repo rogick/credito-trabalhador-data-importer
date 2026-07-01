@@ -2,19 +2,24 @@
   "name": "credito-trabalhador-data-importer",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
   "description": "Consumer da API eSocial Consignado (SERPRO) — recepção e consulta de lotes de contrato de empréstimo consignado.",
+  "bin": {
+    "esocial-consignado": "./bin/esocial-consignado.mjs"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
+    "next": "^14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.0"
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13"
   }
 }
