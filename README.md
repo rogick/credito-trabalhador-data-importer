@@ -37,11 +37,42 @@ que o repassa ao SERPRO via header `Authorization`.
 
 ## Como rodar
 
+### Modo desenvolvimento (dentro do repositório)
+
 ```bash
 npm install
 npm run dev      # http://localhost:3000
 npm run build && npm start   # build de produção
 ```
+
+### Instalação global (comando `esocial-consignado`)
+
+Para rodar o app como um comando disponível em qualquer diretório:
+
+```bash
+./install.sh
+```
+
+O script instala as dependências, gera o build de produção e registra o
+comando globalmente via `npm link`. Depois disso, de qualquer pasta:
+
+```bash
+esocial-consignado             # inicia em http://localhost:3000
+esocial-consignado -p 4000     # porta customizada (ou defina PORT=4000)
+esocial-consignado --dev       # modo desenvolvimento (next dev)
+esocial-consignado --build     # força regerar o build antes de iniciar
+esocial-consignado --help      # lista as opções
+```
+
+Para desinstalar o comando global:
+
+```bash
+./uninstall.sh
+```
+
+> `npm link` cria um symlink global apontando para esta pasta do repositório
+> — não copia os arquivos. Se você mover ou apagar o diretório do projeto, o
+> comando global para de funcionar até rodar `./install.sh` novamente.
 
 ## Observações
 
