@@ -1,21 +1,23 @@
+'use client';
+
 import React, { useState } from 'react';
 
 /**
  * Consumer da API eSocial Consignado (SERPRO) — Produção Restrita.
  *
- * App de arquivo único com duas abas:
- *  - Receber Lote  (POST /receberlote)
- *  - Consultar Lote (GET  /consultarlote)
+ * App com duas abas:
+ *  - Receber Lote   (POST /api/receberlote  -> servidor Next.js -> SERPRO)
+ *  - Consultar Lote (GET  /api/consultarlote -> servidor Next.js -> SERPRO)
+ *
+ * As chamadas à API do SERPRO são feitas pelas API Routes do Next.js
+ * (server-side, ver app/api/*), não diretamente pelo navegador — assim
+ * evita-se o bloqueio de CORS que a API do governo impõe a chamadas
+ * browser-direct.
  *
  * Autenticação via Bearer JWT informado pelo usuário.
  * Sem bibliotecas externas além de Tailwind (classes base).
  * Sem <form>, sem localStorage — todo estado em useState.
  */
-
-// URL base padrão (chamada direta ao SERPRO). Em navegador isso costuma falhar
-// por CORS — use um proxy (veja README) e ajuste o campo "URL base da API".
-const DEFAULT_BASE_URL =
-  'https://producaorestrita-esocialconsignado.df-1.estaleiro.serpro.gov.br/recepcaolote/api/ContratoEmprestimoConsignado';
 
 // Tabela 01 do eSocial (categorias de trabalhador) — subconjunto mais usado.
 const CATEGORIAS = [
@@ -187,7 +189,7 @@ function ResponseView({ result }) {
         <p className="font-semibold">Falha na requisição</p>
         <p className="mt-1">{error}</p>
         <p className="mt-2 text-xs text-red-600">
-          Possíveis causas: bloqueio de CORS pelo navegador, indisponibilidade da API,
+          Possíveis causas: servidor Next.js fora do ar, indisponibilidade da API do SERPRO,
           token inválido ou ausência de conectividade com o ambiente de produção restrita.
         </p>
       </div>
@@ -232,11 +234,7 @@ function ResponseView({ result }) {
 export default function EsocialConsignadoApp() {
   const [jwtToken, setJwtToken] = useState('');
   const [nrInscricaoEmpregador, setNrInscricaoEmpregador] = useState('');
-  const [apiBase, setApiBase] = useState(DEFAULT_BASE_URL);
   const [activeTab, setActiveTab] = useState('send'); // 'send' | 'query'
-
-  // Remove barra(s) final(is) para montar as URLs com segurança.
-  const base = () => apiBase.trim().replace(/\/+$/, '');
 
   // Aba "Receber Lote"
   const [nrLote, setNrLote] = useState('');
@@ -298,7 +296,7 @@ export default function EsocialConsignadoApp() {
       })),
     };
 
-    const url = `${base()}/receberlote?nrInscricaoEmpregador=${encodeURIComponent(
+    const url = `/api/receberlote?nrInscricaoEmpregador=${encodeURIComponent(
       onlyDigits(nrInscricaoEmpregador)
     )}`;
 
@@ -319,7 +317,7 @@ export default function EsocialConsignadoApp() {
     setValidationErrors(errs);
     if (errs.length > 0) return;
 
-    const url = `${base()}/consultarlote?nrInscricaoEmpregador=${encodeURIComponent(
+    const url = `/api/consultarlote?nrInscricaoEmpregador=${encodeURIComponent(
       onlyDigits(nrInscricaoEmpregador)
     )}&nrLote=${encodeURIComponent(queryNrLote)}`;
 
@@ -356,8 +354,10 @@ export default function EsocialConsignadoApp() {
 
       {/* Aviso CORS */}
       <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">
-        ⚠️ Esta API pode exigir proxy backend por restrições de CORS. Chamadas diretas pelo
-        navegador podem ser bloqueadas.
+        ⚠️ Esta API exige proxy backend por restrições de CORS. As requisições abaixo passam
+        pelas API Routes deste servidor Next.js (<code>/api/receberlote</code>,{' '}
+        <code>/api/consultarlote</code>), que repassam ao SERPRO — o navegador nunca chama a
+        API do governo diretamente.
       </div>
 
       {/* Configuração compartilhada */}
@@ -379,19 +379,6 @@ export default function EsocialConsignadoApp() {
             inputMode="numeric"
           />
         </Field>
-        <div className="md:col-span-2">
-          <Field
-            label="URL base da API (ou proxy)"
-            hint="Para contornar CORS, aponte para seu proxy. Vite: /esocial-api/recepcaolote/api/ContratoEmprestimoConsignado · Node: http://localhost:8080/recepcaolote/api/ContratoEmprestimoConsignado"
-          >
-            <input
-              className={`${inputClass} font-mono`}
-              value={apiBase}
-              onChange={(e) => setApiBase(e.target.value)}
-              placeholder={DEFAULT_BASE_URL}
-            />
-          </Field>
-        </div>
       </div>
 
       {/* Abas */}

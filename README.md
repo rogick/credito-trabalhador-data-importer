@@ -1,83 +1,51 @@
 # credito-trabalhador-data-importer
 
-Consumer (React) da API **eSocial Consignado** do SERPRO para recepção e
-consulta de lotes de contrato de empréstimo consignado (Crédito do Trabalhador).
+Consumer (React/Next.js) da API **eSocial Consignado** do SERPRO para
+recepção e consulta de lotes de contrato de empréstimo consignado (Crédito
+do Trabalhador).
 
 Ambiente alvo: **Produção Restrita**
 (`producaorestrita-esocialconsignado.df-1.estaleiro.serpro.gov.br`).
 
-## App
+## Arquitetura
 
-Toda a lógica do app está em um único arquivo:
-[`src/EsocialConsignadoApp.jsx`](src/EsocialConsignadoApp.jsx).
+A API do SERPRO **não envia cabeçalhos CORS**, então chamadas diretas do
+navegador são bloqueadas (`Failed to fetch`). Por isso o app é um projeto
+**Next.js**: a UI (client component) chama endpoints locais same-origin,
+e são as **API Routes** do Next.js — rodando em Node no servidor — que de
+fato conversam com o SERPRO. CORS não se aplica a chamadas servidor-a-servidor.
 
-Duas abas:
+```
+navegador  --(same-origin)-->  API Routes Next.js  --(server-side)-->  SERPRO
+```
 
-- **Receber Lote** — `POST /receberlote` com lote de 1 a 10 registros.
-- **Consultar Lote** — `GET /consultarlote`, exibindo `retornoLote[]` em tabela.
+- UI: [`src/EsocialConsignadoApp.jsx`](src/EsocialConsignadoApp.jsx) —
+  toda a lógica de formulário/validação/exibição, renderizado por
+  [`app/page.jsx`](app/page.jsx).
+- Proxy server-side:
+  - [`app/api/receberlote/route.js`](app/api/receberlote/route.js) → `POST /receberlote`
+  - [`app/api/consultarlote/route.js`](app/api/consultarlote/route.js) → `GET /consultarlote`
+
+Duas abas na UI:
+
+- **Receber Lote** — lote de 1 a 10 registros.
+- **Consultar Lote** — exibe `retornoLote[]` em tabela.
 
 Configuração compartilhada (sempre visível): **JWT Token** (Bearer) e
-**nrInscricaoEmpregador**.
+**nrInscricaoEmpregador**. O JWT é enviado pelo navegador ao endpoint local,
+que o repassa ao SERPRO via header `Authorization`.
 
 ## Como rodar
 
-### Opção A — Standalone (sem build)
-
-Abra [`standalone.html`](standalone.html) diretamente no navegador. Tudo
-(React, Babel e Tailwind) é carregado via CDN e o app é transformado no
-próprio navegador — não precisa de `npm` nem de servidor.
-
-### Opção B — Com build (Vite)
-
 ```bash
 npm install
-npm run dev      # servidor de desenvolvimento (Vite)
-npm run build    # build de produção em dist/
+npm run dev      # http://localhost:3000
+npm run build && npm start   # build de produção
 ```
-
-Os arquivos `index.html`, `src/main.jsx`, `vite.config.js` e `package.json`
-são apenas o scaffold de build/dev (Vite + Tailwind via CDN). A lógica
-permanece inteiramente no `.jsx` único.
-
-## CORS — obrigatório usar proxy
-
-A API do SERPRO **não envia cabeçalhos CORS**, então o navegador bloqueia
-qualquer chamada direta (`Failed to fetch`). É preciso um **proxy do lado do
-servidor** que faça a requisição e devolva com CORS liberado. O campo
-**"URL base da API (ou proxy)"** no topo do app permite apontar para o proxy
-sem mexer no código.
-
-### Com Vite (`npm run dev`) — proxy embutido
-
-O `vite.config.js` já encaminha o prefixo `/esocial-api` para o SERPRO. Basta
-preencher o campo **URL base da API** com:
-
-```
-/esocial-api/recepcaolote/api/ContratoEmprestimoConsignado
-```
-
-As chamadas saem same-origin para o Vite, que repassa ao SERPRO (sem CORS).
-
-### Com o standalone — proxy Node (sem dependências)
-
-Rode o proxy incluso e mantenha o `standalone.html` aberto:
-
-```bash
-node proxy-server.mjs          # escuta em http://localhost:8080
-# PORT=9000 node proxy-server.mjs   # porta alternativa
-```
-
-No app, preencha **URL base da API** com:
-
-```
-http://localhost:8080/recepcaolote/api/ContratoEmprestimoConsignado
-```
-
-> Os proxies são ferramentas de desenvolvimento/teste. Para produção, use um
-> backend próprio com as devidas regras de segurança.
 
 ## Observações
 
 - **Autenticação:** o JWT é obtido externamente e informado pelo usuário.
-  Não há persistência (`localStorage`) — o estado vive apenas em memória.
-- Os dados **não são mockados**: o app chama a API real (via proxy).
+  Não há persistência (`localStorage`) — o estado vive apenas em memória do
+  navegador; as API Routes não armazenam o token, apenas o repassam.
+- Os dados **não são mockados**: o app chama a API real do SERPRO.
