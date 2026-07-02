@@ -33,8 +33,6 @@ exibirá uma janela para **selecionar o certificado digital**.
 2. Clique em **OK**.
 3. Se solicitado, insira a senha (PIN) do certificado.
 
-![Seleção do certificado digital no gov.br](images/02-selecao-certificado.png)
-
 ---
 
 ## Passo 3 — Navegar até "Consulta obrigatoriedade"
