@@ -74,6 +74,14 @@ Para desinstalar o comando global:
 > — não copia os arquivos. Se você mover ou apagar o diretório do projeto, o
 > comando global para de funcionar até rodar `./install.sh` novamente.
 
+## Como obter o token JWT
+
+O aplicativo requer um token JWT válido para se comunicar com a API do SERPRO.
+Para saber como obtê-lo no portal do eSocial (Produção Restrita), consulte o
+guia passo a passo:
+
+📖 **[Como obter o token](docs/como-obter-token.md)**
+
 ## Observações
 
 - **Autenticação:** o JWT é obtido externamente e informado pelo usuário.
